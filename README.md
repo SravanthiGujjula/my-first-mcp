@@ -36,11 +36,15 @@ Key files:
 
 ## Setup
 
+The Node version is pinned in `.nvmrc`. Select it first (installs it if needed):
+
 ```bash
+nvm use         # reads .nvmrc; run `nvm install` first if that version is missing
 npm install     # installs deps AND builds dist/ (via the "prepare" script)
 ```
 
-That single command is all a fresh clone needs before the server is runnable.
+`nvm use` + `npm install` is all a fresh clone needs before the server is
+runnable.
 
 ---
 
@@ -161,3 +165,55 @@ claude                 # Claude Code auto-detects .mcp.json; approve once
 
 The desktop app is the only piece they re-register locally (use case 5), because
 its config uses an absolute path unique to their machine.
+
+---
+
+## Publishing to npm (`@srav/mcp-time-server`)
+
+Publishing lets anyone add the server with a single `npx` line — no clone, no
+build, no absolute paths.
+
+**Prerequisites already in place:**
+
+- `bin` maps `my-mcp-server → dist/index.js`, and `src/index.ts` starts with
+  `#!/usr/bin/env node`, so the published package is directly runnable.
+- `files: ["dist"]` ensures the compiled output ships in the tarball. (Without
+  it, npm falls back to `.gitignore` — which excludes `dist/` — and would
+  publish an empty package.)
+- `prepare` builds `dist/` automatically on `npm publish`.
+- `publishConfig.access = "public"` publishes the scoped package publicly.
+
+**Verify, then publish:**
+
+```bash
+npm pack --dry-run      # confirm dist/index.js is in the tarball
+npm login               # once
+npm publish             # runs prepare (build) then uploads
+```
+
+**After publishing**, switch `.mcp.json` (or use `claude mcp add`) from the local
+path to the published package:
+
+```jsonc
+// local dev (current — keep while iterating)
+{ "command": "node", "args": ["dist/index.js"] }
+
+// published (after npm publish)
+{ "command": "npx", "args": ["-y", "@srav/mcp-time-server"] }
+```
+
+```bash
+# or register from the CLI, user scope = available in every project
+claude mcp add --scope user my-first-server -- npx -y @srav/mcp-time-server
+```
+
+`npx` downloads the package to its cache on first run, then executes the `bin`
+entry — from there the stdio JSON-RPC flow is identical to running locally.
+
+## Distribution models at a glance
+
+| Model | `.mcp.json` command | When |
+|-------|--------------------|------|
+| Local path | `node dist/index.js` | You, developing on this machine |
+| Cloned repo | `node dist/index.js` | Teammates who clone + `npm install` |
+| Published npm | `npx -y @srav/mcp-time-server` | Anyone, anywhere — no clone needed |

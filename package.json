@@ -1,5 +1,5 @@
 {
-  "name": "mcp",
+  "name": "@srav/mcp-time-server",
   "version": "1.0.0",
   "description": "A minimal MCP server exposing a single tool, for learning MCP.",
   "type": "module",
@@ -18,6 +18,15 @@
   ],
   "author": "",
   "license": "ISC",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.6.4"
