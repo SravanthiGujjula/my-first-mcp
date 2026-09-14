@@ -28,7 +28,10 @@ app.post("/mcp", async (req, res) => {
     const server = createServer();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined, // undefined => stateless (no Mcp-Session-Id)
-      enableJsonResponse: true, // reply with plain JSON instead of an SSE stream
+      // SSE (default) lets the server stream progress notifications before the
+      // final result. Set MCP_JSON=1 to force a single plain-JSON reply instead
+      // (simpler for curl, but no streaming).
+      enableJsonResponse: process.env.MCP_JSON === "1",
     });
 
     res.on("close", () => {

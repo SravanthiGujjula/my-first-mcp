@@ -216,6 +216,47 @@ stateless** so you are ready for the `2026-07-28` direction.
 
 ---
 
+## 10. Streaming in practice (this repo)
+
+The `stream_load` tool in `src/server.ts` emits a `notifications/progress`
+message per step, then returns a final result. This is "streaming text loading."
+
+**How it works:**
+
+1. The **client opts in** by sending a `progressToken` in the request's `_meta`.
+   The SDK client does this automatically when you pass an `onprogress` callback
+   to `callTool` (see `src/client.ts`).
+2. The **server** reads `extra._meta.progressToken` in the tool handler and, for
+   each step, calls `extra.sendNotification({ method: "notifications/progress",
+   params: { progressToken, progress, total, message } })`.
+3. Notifications arrive **before** the final result:
+   - Over **HTTP** (SSE mode) as `event: message` / `data: {...}` lines on the
+     open POST connection.
+   - Over **stdio** as interleaved JSON-RPC notification lines.
+
+**Transport toggle:** `src/http.ts` uses SSE by default so streaming is visible.
+Set `MCP_JSON=1` to force a single plain-JSON reply instead (simpler for curl,
+but then intermediate notifications cannot be streamed — you only get the final
+result).
+
+**See it on the wire:**
+
+```bash
+npm run start:http          # SSE mode (default)
+curl -sN -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"stream_load","arguments":{"steps":3},"_meta":{"progressToken":"p1"}}}'
+```
+
+Emits three `notifications/progress` events, then the final `result` event.
+`npm run client` shows the same thing via the SDK's `onprogress` callback.
+
+> Note: `notifications/progress` streams *status/metadata* (progress + a message
+> string), not the assistant's generated text. Streaming partial *result*
+> content (e.g. token-by-token tool output) is a separate concern; progress
+> notifications are the standard mechanism for "still working…" updates.
+
 ## Sources
 
 - [Scaling AI Agent Infrastructure with the MCP Stateless updates — Google Developers Blog](https://developers.googleblog.com/scaling-ai-agent-infrastructure-with-the-mcp-stateless-updates/)

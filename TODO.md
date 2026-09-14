@@ -38,7 +38,15 @@ final publish + host-config switch is deferred.
 - [x] Streamable HTTP server (`src/http.ts`, Express, stateless `POST /mcp`).
 - [x] Demo client (`src/client.ts`) connecting over Streamable HTTP.
 - [x] Tool factored into `src/server.ts`, shared by stdio + HTTP entrypoints.
-- [ ] Try connecting Claude Code to the HTTP server:
+- [x] Connected Claude Code to the HTTP server:
       `claude mcp add --transport http my-http-server http://localhost:3000/mcp`
-- [ ] (Later) add progress/notification streaming to a tool to see SSE in action.
+- [x] Added progress/notification streaming (`stream_load` tool) — visible as
+      SSE over HTTP and interleaved notifications over stdio.
 - [ ] (Later) migrate to the stateless spec API once the SDK ships it.
+
+## Primitives
+- [x] Tool: `get_current_time` (input + output schema).
+- [x] Tool: `stream_load` (streaming progress notifications).
+- [x] Resource (static): `timezone://common`.
+- [x] Resource (template): `time://{timezone}`.
+- [x] Prompt: `time_report`.

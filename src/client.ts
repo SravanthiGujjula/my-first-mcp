@@ -32,4 +32,18 @@ const result = await client.callTool({
 console.log("\nCall result:");
 console.log(JSON.stringify(result, null, 2));
 
+// Streaming demo: passing `onprogress` makes the SDK attach a progressToken,
+// so the server's notifications/progress arrive live — one line per chunk —
+// BEFORE the final result. Over HTTP these come in as SSE events.
+console.log("\nStreaming load (progress arrives live):");
+const streamed = await client.callTool(
+  { name: "stream_load", arguments: { steps: 5 } },
+  undefined,
+  {
+    onprogress: (p) =>
+      console.log(`  [${p.progress}/${p.total ?? "?"}] ${p.message ?? ""}`),
+  }
+);
+console.log("Final:", JSON.stringify(streamed.content));
+
 await client.close();

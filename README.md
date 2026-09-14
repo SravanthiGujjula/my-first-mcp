@@ -92,15 +92,24 @@ npm run client         # connects, lists tools, calls get_current_time
 ```
 
 The server is **stateless** (no `Mcp-Session-Id`): each `POST /mcp` builds a
-fresh server + transport. See `docs/transports.md` for why. You can also poke it
-with curl:
+fresh server + transport. See `docs/transports.md` for why.
+
+By default it replies over **SSE** so it can stream progress notifications
+(see the `stream_load` tool). Set `MCP_JSON=1` for single plain-JSON replies
+(easier for curl, but no streaming):
 
 ```bash
+MCP_JSON=1 npm run start:http
+
 curl -s -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
+
+To watch the raw SSE stream (progress events, then the final result), run the
+server in default SSE mode and see the streaming example in
+[`docs/transports.md`](docs/transports.md#10-streaming-in-practice-this-repo).
 
 To connect **Claude Code** to the HTTP server instead of stdio:
 
