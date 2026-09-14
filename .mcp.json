@@ -1,3 +1,8 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "my-first-server": {
+      "command": "node",
+      "args": ["dist/index.js"]
+    }
+  }
 }
