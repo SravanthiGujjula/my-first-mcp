@@ -10,56 +10,58 @@
  * is a factory function rather than a singleton.
  */
 
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 
 // A small, static list of common IANA timezones used by the resource below.
 const COMMON_TIMEZONES = [
-  "UTC",
-  "America/New_York",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Berlin",
-  "Asia/Kolkata",
-  "Asia/Tokyo",
-  "Australia/Sydney",
+  'UTC',
+  'America/New_York',
+  'America/Los_Angeles',
+  'Europe/London',
+  'Europe/Berlin',
+  'Asia/Kolkata',
+  'Asia/Tokyo',
+  'Australia/Sydney',
 ];
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function createServer(): McpServer {
   const server = new McpServer({
-    name: "my-first-mcp-server",
-    version: "1.0.0",
+    name: 'my-first-mcp-server',
+    version: '1.0.0',
   });
 
   server.registerTool(
-    "get_current_time",
+    'get_current_time',
     {
-      title: "Get current time",
+      title: 'Get current time',
       description:
-        "Returns the current date and time. Optionally pass an IANA timezone " +
+        'Returns the current date and time. Optionally pass an IANA timezone ' +
         "(e.g. 'Asia/Kolkata', 'America/New_York') to get the time there.",
       inputSchema: {
         timezone: z
           .string()
           .optional()
-          .describe("IANA timezone name, e.g. 'Asia/Kolkata'. Defaults to the server's local time."),
+          .describe(
+            "IANA timezone name, e.g. 'Asia/Kolkata'. Defaults to the server's local time.",
+          ),
       },
       outputSchema: {
-        iso: z.string().describe("ISO 8601 timestamp"),
-        unixSeconds: z.number().describe("Seconds since the Unix epoch"),
-        timezone: z.string().describe("The IANA timezone the result is expressed in"),
+        iso: z.string().describe('ISO 8601 timestamp'),
+        unixSeconds: z.number().describe('Seconds since the Unix epoch'),
+        timezone: z.string().describe('The IANA timezone the result is expressed in'),
       },
     },
     async ({ timezone }) => {
       try {
         const now = new Date();
         const tz = timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const formatted = new Intl.DateTimeFormat("en-US", {
+        const formatted = new Intl.DateTimeFormat('en-US', {
           timeZone: timezone,
-          dateStyle: "full",
-          timeStyle: "long",
+          dateStyle: 'full',
+          timeStyle: 'long',
         }).format(now);
 
         return {
@@ -70,7 +72,7 @@ export function createServer(): McpServer {
           },
           content: [
             {
-              type: "text",
+              type: 'text',
               text: timezone
                 ? `Current time in ${timezone}: ${formatted}`
                 : `Current local time: ${formatted}`,
@@ -82,13 +84,13 @@ export function createServer(): McpServer {
           isError: true,
           content: [
             {
-              type: "text",
+              type: 'text',
               text: `Invalid timezone "${timezone}". Use an IANA name like 'Asia/Kolkata'.`,
             },
           ],
         };
       }
-    }
+    },
   );
 
   // ---------------------------------------------------------------------------
@@ -104,11 +106,11 @@ export function createServer(): McpServer {
   // callTool; we read it from extra._meta.progressToken and only emit if set.
   // ---------------------------------------------------------------------------
   server.registerTool(
-    "stream_load",
+    'stream_load',
     {
-      title: "Streaming load demo",
+      title: 'Streaming load demo',
       description:
-        "Simulates loading in steps, streaming one progress notification per step, then returns a final message.",
+        'Simulates loading in steps, streaming one progress notification per step, then returns a final message.',
       inputSchema: {
         steps: z
           .number()
@@ -116,7 +118,7 @@ export function createServer(): McpServer {
           .min(1)
           .max(20)
           .optional()
-          .describe("Number of progress steps to emit (default 5)."),
+          .describe('Number of progress steps to emit (default 5).'),
       },
     },
     async ({ steps }, extra) => {
@@ -126,7 +128,7 @@ export function createServer(): McpServer {
       for (let i = 1; i <= total; i++) {
         if (progressToken !== undefined) {
           await extra.sendNotification({
-            method: "notifications/progress",
+            method: 'notifications/progress',
             params: {
               progressToken,
               progress: i,
@@ -135,13 +137,13 @@ export function createServer(): McpServer {
             },
           });
         }
-        await sleep(300); // simulate work between chunks
+        await sleep(1000); // simulate work between chunks
       }
 
       return {
-        content: [{ type: "text", text: `Done — loaded ${total} chunks.` }],
+        content: [{ type: 'text', text: `Done — loaded ${total} chunks.` }],
       };
-    }
+    },
   );
 
   // ---------------------------------------------------------------------------
@@ -151,22 +153,22 @@ export function createServer(): McpServer {
   // (like files). This one is a fixed URI returning a JSON list of timezones.
   // ---------------------------------------------------------------------------
   server.registerResource(
-    "common-timezones",
-    "timezone://common", // fixed URI
+    'common-timezones',
+    'timezone://common', // fixed URI
     {
-      title: "Common timezones",
-      description: "A curated list of common IANA timezone names.",
-      mimeType: "application/json",
+      title: 'Common timezones',
+      description: 'A curated list of common IANA timezone names.',
+      mimeType: 'application/json',
     },
     async (uri) => ({
       contents: [
         {
           uri: uri.href,
-          mimeType: "application/json",
+          mimeType: 'application/json',
           text: JSON.stringify(COMMON_TIMEZONES, null, 2),
         },
       ],
-    })
+    }),
   );
 
   // ---------------------------------------------------------------------------
@@ -175,29 +177,29 @@ export function createServer(): McpServer {
   // as undefined) so you don't accidentally forget resource enumeration.
   // ---------------------------------------------------------------------------
   server.registerResource(
-    "time-by-zone",
-    new ResourceTemplate("time://{+timezone}", { list: undefined }),
+    'time-by-zone',
+    new ResourceTemplate('time://{+timezone}', { list: undefined }),
     {
-      title: "Current time by timezone",
-      description: "Read time://{timezone} to get the current time in that IANA zone.",
-      mimeType: "text/plain",
+      title: 'Current time by timezone',
+      description: 'Read time://{timezone} to get the current time in that IANA zone.',
+      mimeType: 'text/plain',
     },
     async (uri, variables) => {
       const timezone = String(variables.timezone);
       let text: string;
       try {
-        text = new Intl.DateTimeFormat("en-US", {
+        text = new Intl.DateTimeFormat('en-US', {
           timeZone: timezone,
-          dateStyle: "full",
-          timeStyle: "long",
+          dateStyle: 'full',
+          timeStyle: 'long',
         }).format(new Date());
       } catch {
         text = `Invalid timezone "${timezone}". Use an IANA name like 'Asia/Tokyo'.`;
       }
       return {
-        contents: [{ uri: uri.href, mimeType: "text/plain", text }],
+        contents: [{ uri: uri.href, mimeType: 'text/plain', text }],
       };
-    }
+    },
   );
 
   // ---------------------------------------------------------------------------
@@ -205,10 +207,10 @@ export function createServer(): McpServer {
   // (e.g. a slash command in the host). Returns messages, not data.
   // ---------------------------------------------------------------------------
   server.registerPrompt(
-    "time_report",
+    'time_report',
     {
-      title: "Time report",
-      description: "Ask for the current time in a city and report it clearly.",
+      title: 'Time report',
+      description: 'Ask for the current time in a city and report it clearly.',
       argsSchema: {
         city: z.string().describe("City or place name, e.g. 'Tokyo'"),
       },
@@ -216,14 +218,14 @@ export function createServer(): McpServer {
     ({ city }) => ({
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: {
-            type: "text",
+            type: 'text',
             text: `What is the current time in ${city}? Use the get_current_time tool to find out, then state it clearly with the timezone.`,
           },
         },
       ],
-    })
+    }),
   );
 
   return server;
