@@ -7,6 +7,10 @@ exposes a single tool, `get_current_time`, over **stdio**. Built with the
 Use it as a learning reference for how an MCP server is structured and how it
 connects to hosts like Claude Code and the Claude desktop app.
 
+> 📚 See [`docs/transports.md`](docs/transports.md) for notes on stdio vs HTTP
+> transports, "Streamable HTTP," and the **stateless** spec update (2026-07-28)
+> that removed `Mcp-Session-Id` and the handshake.
+
 ## How it works
 
 An MCP **host** (Claude Code, the Claude desktop app) launches this **server**
