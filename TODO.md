@@ -33,6 +33,12 @@ final publish + host-config switch is deferred.
 - [ ] Consider a GitHub Action to publish on tag (`npm publish` with an npm token).
 - [ ] Add more tools once the transport story is settled (see transport work).
 
-## Transports (next up)
-- [ ] Explore HTTP transport (Streamable HTTP) for the server.
-- [ ] Explore client-side connection over both stdio and HTTP.
+## Transports
+- [x] Notes written up in `docs/transports.md` (incl. 2026-07-28 stateless update).
+- [x] Streamable HTTP server (`src/http.ts`, Express, stateless `POST /mcp`).
+- [x] Demo client (`src/client.ts`) connecting over Streamable HTTP.
+- [x] Tool factored into `src/server.ts`, shared by stdio + HTTP entrypoints.
+- [ ] Try connecting Claude Code to the HTTP server:
+      `claude mcp add --transport http my-http-server http://localhost:3000/mcp`
+- [ ] (Later) add progress/notification streaming to a tool to see SSE in action.
+- [ ] (Later) migrate to the stateless spec API once the SDK ships it.

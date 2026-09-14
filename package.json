@@ -11,6 +11,10 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
+    "dev:http": "tsx src/http.ts",
+    "start:http": "node dist/http.js",
+    "client": "node dist/client.js",
+    "dev:client": "tsx src/client.ts",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -29,9 +33,11 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^5.2.1",
     "zod": "^4.6.4"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.5.1",
     "tsx": "^4.23.13",
     "typescript": "^5.7.2"
